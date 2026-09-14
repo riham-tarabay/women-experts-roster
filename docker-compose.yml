@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: roster
+      POSTGRES_USER: roster
+      POSTGRES_PASSWORD: roster_dev_only
+    ports: ["5432:5432"]
+    volumes: ["roster-db:/var/lib/postgresql/data"]
+  api:
+    image: node:22-alpine
+    working_dir: /app
+    volumes: ["./apps/api:/app"]
+    command: sh -c "npm install && npm run start"
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://roster:roster_dev_only@db:5432/roster
+    ports: ["4000:4000"]
+    depends_on: [db]
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    volumes: ["./apps/web:/app"]
+    command: sh -c "npm install && npm run dev"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports: ["3000:3000"]
+    depends_on: [api]
+volumes:
+  roster-db:

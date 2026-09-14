@@ -1,0 +1,71 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role { EXPERT REVIEWER ADMIN }
+enum SubmissionStatus { DRAFT SUBMITTED APPROVED REJECTED }
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      Role     @default(EXPERT)
+  locale    String   @default("en")
+  disabled  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  profile   ExpertProfile?
+  audits    AuditEvent[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  nameEn    String
+  nameAr    String
+  slug      String   @unique
+  profiles  ExpertProfile[]
+}
+
+model ExpertProfile {
+  id            String           @id @default(uuid())
+  userId        String           @unique
+  categoryId    String
+  name          String
+  headlineEn    String
+  headlineAr    String
+  bioEn         String
+  bioAr         String
+  location      String
+  languages     String[]
+  status        SubmissionStatus @default(DRAFT)
+  consentVersion String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id])
+  category      Category         @relation(fields: [categoryId], references: [id])
+  submissions   Submission[]
+}
+
+model Submission {
+  id        String           @id @default(uuid())
+  profileId String
+  status    SubmissionStatus
+  reason    String?
+  createdAt DateTime         @default(now())
+  profile   ExpertProfile     @relation(fields: [profileId], references: [id])
+}
+
+model AuditEvent {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  actor     User?    @relation(fields: [actorId], references: [id])
+  @@index([entity, entityId])
+}
