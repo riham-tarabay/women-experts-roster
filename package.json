@@ -1,0 +1,9 @@
+{
+  "name": "women-experts-roster",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bilingual Women Experts Roster portfolio demonstration",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
